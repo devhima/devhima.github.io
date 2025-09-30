@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -128,8 +127,8 @@
     </style>
     
     <!-- استدعاء ملفات JavaScript الخاصة بـ KaTeX للعرض التلقائي للرموز -->
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderContent();"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 </head>
 <body class="p-4 sm:p-8">
 
@@ -293,7 +292,7 @@
             <p>تتكون مشكلة توافق الذكاء الاصطناعي من بعدين أساسيين:</p>
             <ol class="list-decimal pr-10 text-gray-700">
                 <li>**التوافق الخارجي (Outer Alignment):** يتعلق بصياغة دالة مكافأة (reward function) أو دالة هدف تُلخص وتلتقط بشكل كامل الأهداف البشرية المرغوبة.</li>
-                <li>**التوافق الداخلي (Inner Alignment):</** يتعلق بضمان أن الذكاء الاصطناعي يتعلم الأهداف الأساسية التي قصدها المصممون، وليس مجرد "اختراق" دالة المكافأة.</li>
+                <li>**التوافق الداخلي (Inner Alignment):** يتعلق بضمان أن الذكاء الاصطناعي يتعلم الأهداف الأساسية التي قصدها المصممون، وليس مجرد "اختراق" دالة المكافأة.</li>
             </ol>
             <p>
                 إن التمييز بين هذين المفهومين أمر بالغ الأهمية. ففي حين أن التوافق الخارجي يمكن اعتباره مشكلة "للمصممين" (أي كيف يتم ترميز القيم)، فإن التوافق الداخلي يمثل تحدياً أعمق يتعلق بكيفية تعلم النموذج وتعميمه.<a href="#ref25" class="citation-marker">[25]</a>
@@ -309,7 +308,7 @@
 
             <!-- المعادلة الرياضية لنموذج المكافأة (KaTeX Rendering) -->
             <div class="math-display">
-                $$P(y_j > y_k) = \frac{1}{1 + e^{- (r_{\theta}(x, y_j) - r_{\theta}(x, y_k))}}$$
+                $P(y_j > y_k) = \frac{1}{1 + e^{- (r_{\theta}(x, y_j) - r_{\theta}(x, y_k))}}$
             </div>
 
             <p>
@@ -319,17 +318,17 @@
             <!-- الرمز البرمجي التمثيلي لخوارزمية RLHF -->
             <pre><code class="language-pseudocode">
 // خوارزمية RLHF مع PPO
-Initialize LLM policy $\pi_{\theta}$ (SFT model)
-Initialize Reward Model $r_{\phi}$ (trained on human preferences)
+Initialize LLM policy π_θ (SFT model)
+Initialize Reward Model r_φ (trained on human preferences)
 
 Loop for many episodes:
-  For each prompt $x$ in the dataset:
-    Generate $K$ responses $y_{1},..., y_{K}$ using $\pi_{\theta}$
-    Calculate reward $R_i = r_{\phi}(x, y_i)$ for each response
+  For each prompt x in the dataset:
+    Generate K responses y₁,...,yₖ using π_θ
+    Calculate reward Rᵢ = r_φ(x, yᵢ) for each response
   
-  Update policy $\pi_{\theta}$ using PPO algorithm:
-    Calculate advantages based on rewards $R$
-    Optimize $L_{PPO}$ using the policy gradient
+  Update policy π_θ using PPO algorithm:
+    Calculate advantages based on rewards R
+    Optimize L_PPO using the policy gradient
             </code></pre>
 
             <h4 class="text-xl font-medium text-gray-600 mt-6">2. التعلم المعزز العكسي (IRL):</h4>
@@ -340,15 +339,15 @@ Loop for many episodes:
             <!-- الرمز البرمجي التمثيلي لخوارزمية IRL -->
             <pre><code class="language-pseudocode">
 // خوارزمية IRL العامة
-Input: a set of expert trajectories $\mathcal{D} = \{\tau_1,..., \tau_N\}$
-Output: a reward function $R_{\theta}$
+Input: a set of expert trajectories D = {τ₁,...,τₙ}
+Output: a reward function R_θ
         
 Loop for many iterations:
-  Randomly initialize or update policy $\pi_{\theta}$
-  Solve the forward RL problem to find a policy $\pi_i$ that is optimal for the current $R_{\theta}$
+  Randomly initialize or update policy π_θ
+  Solve the forward RL problem to find a policy πᵢ that is optimal for the current R_θ
   
-  Find a new reward function $R_{\theta}'$ that makes the expert policy $\pi_E$ "more optimal" than the current policy $\pi_i$
-  Update $R_{\theta} = R_{\theta}'$
+  Find a new reward function R_θ' that makes the expert policy π_E "more optimal" than the current policy πᵢ
+  Update R_θ = R_θ'
             </code></pre>
 
             <h4 class="text-xl font-medium text-gray-600 mt-6">جدول 2: مقارنة خوارزمية: RLHF مقابل IRL</h4>
@@ -490,19 +489,20 @@ Loop for many iterations:
 
     <!-- كود JavaScript لتنفيذ KaTeX وتحويل الرموز والمراجع -->
     <script>
-        // دالة تشغيل KaTeX بعد تحميل المكتبة
-        function renderContent() {
-            // استخدام مكتبة auto-render لتحويل جميع النصوص المحاطة بـ $$...$$ تلقائياً
+        // دالة تشغيل KaTeX بعد تحميل المكتبة والصفحة بالكامل
+        document.addEventListener("DOMContentLoaded", function() {
+            // استخدام مكتبة auto-render لتحويل جميع النصوص المحاطة بـ $...$ تلقائياً
             renderMathInElement(
                 document.body,
                 {
                     // تحديد صيغ العرض على سطر منفصل
                     delimiters: [
-                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: true},
                         {left: "$", right: "$", display: false} // دعم الرموز داخل النص بـ $...$
                     ],
                     // تجاهل العناصر غير الرياضية (خاصة الأكواد البرمجية)
                     ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"],
+                    throwOnError: false
                 }
             );
 
@@ -527,7 +527,7 @@ Loop for many iterations:
                     return `<a href="${href1}" class="citation-marker" title="اذهب إلى المرجع ${number1}">${text}</a>`;
                 });
             });
-        }
+        });
     </script>
 </body>
 </html>
