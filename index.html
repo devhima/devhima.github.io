@@ -1,112 +1,496 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevHima GitHub Repositories</title>
+    <meta name="theme-color" content="#1a237e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مراقب البيانات">
+    <meta name="application-name" content="مراقب البيانات">
+    <meta name="msapplication-TileColor" content="#1a237e">
+    <meta name="msapplication-TileImage" content="resources/icon-144x144.png">
+    
+    <title>مراقب البيانات - تطبيق مراقبة استهلاك البيانات</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="resources/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="resources/icon-16x16.png">
+    <link rel="apple-touch-icon" href="resources/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="resources/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="resources/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="resources/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="resources/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="resources/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="resources/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="resources/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="resources/icon-512x512.png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Custom Styles -->
     <style>
+        :root {
+            --primary-dark: #1a237e;
+            --primary-light: #3f51b5;
+            --accent: #00bcd4;
+            --text-dark: #212121;
+            --text-light: #757575;
+            --background: #ffffff;
+            --surface: #f5f5f5;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-            line-height: 1.6;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        header {
-            background-color: #24292e;
-            color: white;
-            text-align: center;
-            padding: 2rem;
+        
+        .arabic-text {
+            font-family: 'Tajawal', sans-serif;
         }
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        
+        .card-hover {
+            transition: all 0.3s ease;
         }
-        .repo-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
-        .repo-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            transition: transform 0.2s;
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
         }
-        .repo-card:hover {
-            transform: translateY(-5px);
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-        .repo-card h2 {
-            margin: 0 0 0.5rem;
-            font-size: 1.5rem;
+        
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
         }
-        .repo-card p {
-            margin: 0 0 1rem;
-            color: #666;
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
-        .repo-card a {
-            text-decoration: none;
-            color: #0366d6;
-            font-weight: bold;
+        
+        .gradient-text {
+            background: linear-gradient(45deg, var(--accent), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .repo-card a:hover {
-            text-decoration: underline;
-        }
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: #24292e;
-            color: white;
-            position: relative;
-            bottom: 0;
+        
+        #particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            z-index: -1;
         }
-        @media (max-width: 600px) {
-            .repo-list {
-                grid-template-columns: 1fr;
-            }
+        
+        .user-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, var(--accent), var(--primary-light));
+            border: none;
+            border-radius: 50px;
+            padding: 16px 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.3);
+        }
+        
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 188, 212, 0.4);
+        }
+        
+        .start-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 12px 0;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin: 0 4px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-light);
+            background: rgba(63, 81, 181, 0.1);
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-light);
+            background: rgba(63, 81, 181, 0.05);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+        }
+        
+        .dropdown {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .dropdown-item:hover {
+            background: var(--surface);
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
-<script>
-    fetch('https://api.github.com/users/devhima/repos')
-        .then(response => response.json())
-        .then(data => {
-            const repoList = document.querySelector('.repo-list');
-            data.forEach(repo => {
-                const repoCard = document.createElement('div');
-                repoCard.className = 'repo-card';
-                repoCard.innerHTML = `
-                    <h2>${repo.name}</h2>
-                    <p>${repo.description || 'No description available.'}</p>
-                    <a href="${repo.html_url}" target="_blank">View on GitHub</a>
-                `;
-                repoList.appendChild(repoCard);
-            });
-        })
-        .catch(error => console.error('Error fetching repos:', error));
-</script>
 <body>
-    <header>
-        <h1>DevHima GitHub Repositories</h1>
-        <p>Explore my open-source projects hosted on GitHub</p>
-    </header>
-
-    <div class="container">
-        <div class="repo-list">
-            <!-- Add more repo-cards as needed -->
+    <!-- Particles Background -->
+    <div id="particles-container"></div>
+    
+    <!-- Main Content -->
+    <div class="min-h-screen pb-20">
+        <!-- Header Section -->
+        <div class="relative z-10 pt-8 px-6">
+            <!-- App Logo and Title -->
+            <div class="text-center mb-8">
+                <div class="floating-animation">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full glass-effect flex items-center justify-center">
+                        <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            <circle cx="12" cy="12" r="3" opacity="0.7"/>
+                            <path d="M12 6v6l4 2" opacity="0.5"/>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2 arabic-text">مراقب البيانات</h1>
+                <p class="text-white/80 text-lg">تطبيق ذكي لمراقبة استهلاك البيانات</p>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="stats-card">
+                    <div class="text-2xl font-bold gradient-text arabic-text" id="total-users">5</div>
+                    <div class="text-sm text-gray-600">مستخدم</div>
+                </div>
+                <div class="stats-card">
+                    <div class="text-2xl font-bold gradient-text arabic-text" id="total-sessions">12</div>
+                    <div class="text-sm text-gray-600">جلسة</div>
+                </div>
+                <div class="stats-card">
+                    <div class="text-2xl font-bold gradient-text arabic-text" id="total-data">2.4</div>
+                    <div class="text-sm text-gray-600">GB</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Selection Section -->
+        <div class="relative z-10 px-6">
+            <div class="bg-white/95 backdrop-blur-lg rounded-t-3xl min-h-screen p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">اختر مستخدم لبدء الجلسة</h2>
+                
+                <!-- User Selection Dropdown -->
+                <div class="mb-8">
+                    <div class="relative">
+                        <button id="user-dropdown-btn" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-gray-200 text-right flex items-center justify-between hover:border-blue-300 transition-colors">
+                            <span id="selected-user-text">اختر مستخدم...</span>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" id="dropdown-arrow">
+                                <path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown" class="dropdown absolute top-full left-0 right-0 mt-2 hidden z-20">
+                            <!-- Users will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Selected User Info -->
+                <div id="selected-user-info" class="user-card hidden mb-8">
+                    <div class="flex items-center gap-4">
+                        <img id="selected-user-avatar" src="" alt="" class="user-avatar">
+                        <div>
+                            <h3 id="selected-user-name" class="text-lg font-semibold text-gray-800"></h3>
+                            <p class="text-sm text-gray-600">
+                                الجلسات: <span id="selected-user-sessions" class="font-medium"></span> | 
+                                الاستهلاك: <span id="selected-user-usage" class="font-medium"></span> GB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Start Session Button -->
+                <div class="text-center mb-8">
+                    <button id="start-session-btn" class="start-button" disabled>
+                        ابدأ الجلسة
+                    </button>
+                </div>
+                
+                <!-- Recent Sessions -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">آخر الجلسات</h3>
+                    <div id="recent-sessions" class="space-y-3">
+                        <!-- Recent sessions will be populated here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; <a href="https://dev-hima.blogspot.com" target="_blank" style="color: #0366d6;">devhima</a> 2025.</p>
-    </footer>
+    
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="flex justify-around items-center max-w-md mx-auto">
+            <a href="index.html" class="nav-item active">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span class="text-xs">الرئيسية</span>
+            </a>
+            <a href="session.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+                <span class="text-xs">الجلسة</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V7h-2v10zm4 0h2v-4h-2v4z"/>
+                </svg>
+                <span class="text-xs">التحليلات</span>
+            </a>
+            <a href="users.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L12 13l-2.99-4.01A2.5 2.5 0 0 0 7 8H5.46c-.8 0-1.49.59-1.42 1.37L6.5 16H9v6h2v-6h2v6h2z"/>
+                </svg>
+                <span class="text-xs">المستخدمين</span>
+            </a>
+        </div>
+    </nav>
+    
+    <script src="main.js"></script>
+    <script>
+        // Initialize particles background
+        let particles = [];
+        
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('particles-container');
+            
+            // Create particles
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: random(width),
+                    y: random(height),
+                    size: random(2, 6),
+                    speedX: random(-0.5, 0.5),
+                    speedY: random(-0.5, 0.5),
+                    opacity: random(0.3, 0.8)
+                });
+            }
+        }
+        
+        function draw() {
+            clear();
+            
+            // Draw and update particles
+            for (let particle of particles) {
+                fill(255, 255, 255, particle.opacity * 255);
+                noStroke();
+                circle(particle.x, particle.y, particle.size);
+                
+                // Update position
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                
+                // Wrap around edges
+                if (particle.x > width) particle.x = 0;
+                if (particle.x < 0) particle.x = width;
+                if (particle.y > height) particle.y = 0;
+                if (particle.y < 0) particle.y = height;
+            }
+            
+            // Draw connections
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    let distance = dist(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+                    if (distance < 100) {
+                        stroke(255, 255, 255, (1 - distance / 100) * 50);
+                        strokeWeight(1);
+                        line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+                    }
+                }
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+    
+    <script>
+        // Register Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available
+                                    showNotification('تحديث جديد متاح! يرجى تحديث الصفحة.', 'info');
+                                }
+                            });
+                        });
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // PWA Install prompt
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            
+            // Show install button or notification
+            showInstallButton();
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            showNotification('تم تثبيت التطبيق بنجاح!', 'success');
+        });
+        
+        function showInstallButton() {
+            // Create install button or notification
+            const installBanner = document.createElement('div');
+            installBanner.className = 'fixed top-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50';
+            installBanner.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold">تثبيت التطبيق</div>
+                        <div class="text-sm opacity-90">احصل على تجربة أفضل مع تثبيت التطبيق</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-3 py-1 bg-blue-500 rounded text-sm">لاحقاً</button>
+                        <button onclick="installApp()" class="px-3 py-1 bg-white text-blue-600 rounded text-sm font-semibold">تثبيت</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(installBanner);
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (installBanner.parentElement) {
+                    installBanner.remove();
+                }
+            }, 10000);
+        }
+        
+        async function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to install prompt: ${outcome}`);
+                deferredPrompt = null;
+            }
+        }
+    </script>
 </body>
 </html>
