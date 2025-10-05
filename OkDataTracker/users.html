@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين - مراقب البيانات</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-dark: #1a237e;
+            --primary-light: #3f51b5;
+            --accent: #00bcd4;
+            --text-dark: #212121;
+            --text-light: #757575;
+            --background: #ffffff;
+            --surface: #f5f5f5;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            min-height: 100vh;
+        }
+        
+        .arabic-text {
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        .user-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+        }
+        
+        .add-user-fab {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(45deg, var(--accent), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .add-user-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0, 188, 212, 0.5);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+        }
+        
+        .avatar-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-option.selected {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.3);
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-light), var(--accent));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(63, 81, 181, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: var(--text-dark);
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #e91e63);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: rgba(0, 188, 212, 0.1);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        
+        .user-actions {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .edit-btn:hover {
+            background: rgba(255, 193, 7, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .delete-btn {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(244, 67, 54, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 12px 0;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin: 0 4px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-light);
+            background: rgba(63, 81, 181, 0.1);
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-light);
+            background: rgba(63, 81, 181, 0.05);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            opacity: 0.5;
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Android-specific styles */
+        .android-device {
+            --status-bar-height: 0px;
+        }
+        
+        .android-device .pt-8 {
+            padding-top: calc(2rem + var(--status-bar-height, 0px));
+        }
+        
+        .android-device .user-card {
+            margin-bottom: 12px;
+        }
+        
+        .android-device .bottom-nav {
+            height: 70px;
+            padding-bottom: 8px;
+        }
+        
+        .android-device .pb-20 {
+            padding-bottom: 90px;
+        }
+        
+        /* Pull to refresh indicator */
+        #pull-to-refresh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(45deg, #00bcd4, #3f51b5);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            z-index: 1000;
+            transform: translateY(-100%);
+            transition: all 0.3s ease;
+        }
+        
+        /* Android ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .ripple:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Android navigation transitions */
+        .page-transition-enter {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        
+        .page-transition-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 0.3s ease-out;
+        }
+        
+        .page-transition-exit {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .page-transition-exit-active {
+            opacity: 0;
+            transform: translateX(-100%);
+            transition: all 0.3s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="min-h-screen pb-20">
+        <!-- Header -->
+        <div class="pt-8 px-6 mb-6">
+            <div class="user-card text-center">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">إدارة المستخدمين</h1>
+                <p class="text-gray-600">إضافة وتعديل وحذف مستخدمي التطبيق</p>
+            </div>
+        </div>
+        
+        <!-- Users List -->
+        <div class="px-6 mb-6">
+            <div id="users-list">
+                <!-- Users will be populated here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L12 13l-2.99-4.01A2.5 2.5 0 0 0 7 8H5.46c-.8 0-1.49.59-1.42 1.37L6.5 16H9v6h2v-6h2v6h2z"/>
+                </svg>
+                <h3 class="text-lg font-semibold mb-2">لا يوجد مستخدمون</h3>
+                <p class="text-sm">أضف مستخدمين جدد لبدء استخدام التطبيق</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add User FAB -->
+    <div class="add-user-fab" onclick="openAddUserModal()">
+        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    </div>
+    
+    <!-- Add/Edit User Modal -->
+    <div id="user-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-xl font-bold text-gray-800 mb-6">إضافة مستخدم جديد</h2>
+            
+            <form id="user-form">
+                <div class="form-group">
+                    <label class="form-label" for="user-name">الاسم</label>
+                    <input type="text" id="user-name" class="form-input" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">اختر صورة</label>
+                    <div class="avatar-selector" id="avatar-selector">
+                        <!-- Avatar options will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">تأكيد الحذف</h2>
+            <p class="text-gray-600 mb-6">هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع بياناته وجلساته.</p>
+            
+            <div class="action-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">إلغاء</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">حذف</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="flex justify-around items-center max-w-md mx-auto">
+            <a href="index.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span class="text-xs">الرئيسية</span>
+            </a>
+            <a href="session.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+                <span class="text-xs">الجلسة</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18v-2H5V3H3zm4 14h2V9H7v8zm4 0h2V7h-2v10zm4 0h2v-4h-2v4z"/>
+                </svg>
+                <span class="text-xs">التحليلات</span>
+            </a>
+            <a href="users.html" class="nav-item active">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L12 13l-2.99-4.01A2.5 2.5 0 0 0 7 8H5.46c-.8 0-1.49.59-1.42 1.37L6.5 16H9v6h2v-6h2v6h2z"/>
+                </svg>
+                <span class="text-xs">المستخدمين</span>
+            </a>
+        </div>
+    </nav>
+    
+    <script src="main.js"></script>
+    <script>
+        // Users page specific functionality
+        class UsersPage {
+            constructor() {
+                this.users = [];
+                this.currentEditingUser = null;
+                this.userToDelete = null;
+                
+                this.avatarOptions = [
+                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1502767089025-657258c596ea?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+                    'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face'
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.loadUsers();
+                this.renderUsers();
+                this.setupAvatarSelector();
+                this.setupFormHandler();
+            }
+            
+            loadUsers() {
+                // Try to get users from the main app
+                if (window.dataMonitorApp) {
+                    this.users = window.dataMonitorApp.users;
+                } else {
+                    // Fallback to localStorage
+                    const savedUsers = localStorage.getItem('dataMonitor_users');
+                    if (savedUsers) {
+                        this.users = JSON.parse(savedUsers);
+                    } else {
+                        // Use default sample users
+                        this.users = this.getDefaultUsers();
+                    }
+                }
+            }
+            
+            getDefaultUsers() {
+                return [
+                    {
+                        id: 'user1',
+                        name: 'أحمد محمد',
+                        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                        totalUsage: 1.2,
+                        sessionCount: 5,
+                        createdAt: new Date('2024-01-15')
+                    },
+                    {
+                        id: 'user2',
+                        name: 'فاطمة الزهراء',
+                        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+                        totalUsage: 0.8,
+                        sessionCount: 3,
+                        createdAt: new Date('2024-02-10')
+                    },
+                    {
+                        id: 'user3',
+                        name: 'يوسف علي',
+                        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+                        totalUsage: 2.1,
+                        sessionCount: 8,
+                        createdAt: new Date('2024-01-20')
+                    }
+                ];
+            }
+            
+            renderUsers() {
+                const container = document.getElementById('users-list');
+                const emptyState = document.getElementById('empty-state');
+                
+                if (this.users.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                container.innerHTML = '';
+                
+                this.users.forEach(user => {
+                    const userCard = this.createUserCard(user);
+                    container.appendChild(userCard);
+                });
+                
+                // Animate user cards
+                anime({
+                    targets: '.user-card',
+                    translateY: [30, 0],
+                    opacity: [0, 1],
+                    duration: 600,
+                    delay: anime.stagger(100),
+                    easing: 'easeOutQuad'
+                });
+            }
+            
+            createUserCard(user) {
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                
+                card.innerHTML = `
+                    <div class="user-actions">
+                        <button class="action-btn edit-btn" onclick="editUser('${user.id}')">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteUser('${user.id}')">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <img src="${user.avatar}" alt="${user.name}" class="user-avatar">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800">${user.name}</h3>
+                            <p class="text-sm text-gray-600">منذ ${this.formatDate(user.createdAt)}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${user.sessionCount}</div>
+                            <div class="stat-label">جلسات</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${user.totalUsage.toFixed(1)}</div>
+                            <div class="stat-label">GB</div>
+                        </div>
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            formatDate(date) {
+                if (typeof date === 'string') date = new Date(date);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) return 'أمس';
+                if (diffDays < 7) return `${diffDays} أيام`;
+                if (diffDays < 30) return `${Math.ceil(diffDays / 7)} أسابيع`;
+                return `${Math.ceil(diffDays / 30)} أشهر`;
+            }
+            
+            setupAvatarSelector() {
+                const container = document.getElementById('avatar-selector');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                this.avatarOptions.forEach((avatar, index) => {
+                    const img = document.createElement('img');
+                    img.src = avatar;
+                    img.className = 'avatar-option';
+                    img.dataset.avatar = avatar;
+                    
+                    img.addEventListener('click', () => {
+                        // Remove selection from all avatars
+                        container.querySelectorAll('.avatar-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Select clicked avatar
+                        img.classList.add('selected');
+                        this.selectedAvatar = avatar;
+                    });
+                    
+                    // Select first avatar by default
+                    if (index === 0) {
+                        img.classList.add('selected');
+                        this.selectedAvatar = avatar;
+                    }
+                    
+                    container.appendChild(img);
+                });
+            }
+            
+            setupFormHandler() {
+                const form = document.getElementById('user-form');
+                if (!form) return;
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveUser();
+                });
+            }
+            
+            saveUser() {
+                const nameInput = document.getElementById('user-name');
+                const name = nameInput.value.trim();
+                
+                if (!name) {
+                    showNotification('يرجى إدخال اسم المستخدم', 'error');
+                    return;
+                }
+                
+                if (!this.selectedAvatar) {
+                    showNotification('يرجى اختيار صورة للمستخدم', 'error');
+                    return;
+                }
+                
+                if (this.currentEditingUser) {
+                    // Update existing user
+                    const userIndex = this.users.findIndex(u => u.id === this.currentEditingUser.id);
+                    if (userIndex !== -1) {
+                        this.users[userIndex].name = name;
+                        this.users[userIndex].avatar = this.selectedAvatar;
+                    }
+                    showNotification('تم تحديث المستخدم بنجاح', 'success');
+                } else {
+                    // Add new user
+                    const newUser = {
+                        id: `user_${Date.now()}`,
+                        name: name,
+                        avatar: this.selectedAvatar,
+                        totalUsage: 0,
+                        sessionCount: 0,
+                        createdAt: new Date()
+                    };
+                    
+                    this.users.push(newUser);
+                    showNotification('تم إضافة المستخدم بنجاح', 'success');
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('dataMonitor_users', JSON.stringify(this.users));
+                
+                // Update main app if available
+                if (window.dataMonitorApp) {
+                    window.dataMonitorApp.users = this.users;
+                    window.dataMonitorApp.saveUsers(this.users);
+                }
+                
+                // Close modal and refresh list
+                this.closeUserModal();
+                this.renderUsers();
+            }
+            
+            editUser(userId) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) return;
+                
+                this.currentEditingUser = user;
+                
+                // Fill form with user data
+                document.getElementById('user-name').value = user.name;
+                document.getElementById('modal-title').textContent = 'تعديل المستخدم';
+                
+                // Select user's avatar
+                const avatarOptions = document.querySelectorAll('.avatar-option');
+                avatarOptions.forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.dataset.avatar === user.avatar) {
+                        option.classList.add('selected');
+                        this.selectedAvatar = user.avatar;
+                    }
+                });
+                
+                this.openUserModal();
+            }
+            
+            deleteUser(userId) {
+                this.userToDelete = userId;
+                this.openDeleteModal();
+            }
+            
+            confirmDelete() {
+                if (!this.userToDelete) return;
+                
+                // Remove user
+                this.users = this.users.filter(u => u.id !== this.userToDelete);
+                
+                // Save to localStorage
+                localStorage.setItem('dataMonitor_users', JSON.stringify(this.users));
+                
+                // Update main app if available
+                if (window.dataMonitorApp) {
+                    window.dataMonitorApp.users = this.users;
+                    window.dataMonitorApp.saveUsers(this.users);
+                }
+                
+                showNotification('تم حذف المستخدم بنجاح', 'success');
+                
+                this.closeDeleteModal();
+                this.renderUsers();
+                
+                this.userToDelete = null;
+            }
+            
+            openUserModal() {
+                const modal = document.getElementById('user-modal');
+                modal.classList.add('active');
+                
+                // Focus on name input
+                setTimeout(() => {
+                    document.getElementById('user-name').focus();
+                }, 300);
+            }
+            
+            closeUserModal() {
+                const modal = document.getElementById('user-modal');
+                modal.classList.remove('active');
+                
+                // Reset form
+                document.getElementById('user-form').reset();
+                this.currentEditingUser = null;
+                document.getElementById('modal-title').textContent = 'إضافة مستخدم جديد';
+                
+                // Reset avatar selection
+                this.setupAvatarSelector();
+            }
+            
+            openDeleteModal() {
+                const modal = document.getElementById('delete-modal');
+                modal.classList.add('active');
+            }
+            
+            closeDeleteModal() {
+                const modal = document.getElementById('delete-modal');
+                modal.classList.remove('active');
+            }
+        }
+        
+        // Global functions for onclick handlers
+        let usersPage;
+        
+        function openAddUserModal() {
+            if (usersPage) {
+                usersPage.openUserModal();
+            }
+        }
+        
+        function closeUserModal() {
+            if (usersPage) {
+                usersPage.closeUserModal();
+            }
+        }
+        
+        function editUser(userId) {
+            if (usersPage) {
+                usersPage.editUser(userId);
+            }
+        }
+        
+        function deleteUser(userId) {
+            if (usersPage) {
+                usersPage.deleteUser(userId);
+            }
+        }
+        
+        function closeDeleteModal() {
+            if (usersPage) {
+                usersPage.closeDeleteModal();
+            }
+        }
+        
+        function confirmDelete() {
+            if (usersPage) {
+                usersPage.confirmDelete();
+            }
+        }
+        
+        // Initialize users page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            usersPage = new UsersPage();
+        });
+    </script>
+</body>
+</html>
