@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '../types';
 import { BackIcon } from './icons/BackIcon';
@@ -36,7 +37,8 @@ const TrackingView: React.FC<TrackingViewProps> = ({ user, onStopTracking, onBac
 
   const stopRealTracking = () => {
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      // FIX: The error "Expected 1 arguments, but got 0." on line 35 likely indicates an issue with timer function scope. Explicitly using `window.clearInterval` ensures the correct browser-native function is called, matching `window.setInterval`.
+      window.clearInterval(intervalRef.current);
       intervalRef.current = undefined;
       setIsTracking(false);
     }
@@ -67,7 +69,7 @@ const TrackingView: React.FC<TrackingViewProps> = ({ user, onStopTracking, onBac
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        window.clearInterval(intervalRef.current);
       }
     };
   }, []);
