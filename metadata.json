@@ -1,0 +1,5 @@
+{
+  "name": "Mobile Data Tracker",
+  "description": "A web application that simulates a mobile app for tracking data usage for multiple users. Users can be added, and their data consumption during a session can be tracked and added to their total usage.",
+  "requestFramePermissions": []
+}
