@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="appTitle">محاكي خوارزمية الوعي (Westworld)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Soft Dark Mode Palette */
+        :root {
+            --color-bg-dark: #121212; 
+            --color-card-bg: #1E1E1E; 
+            --color-primary-accent: #10B981; /* Emerald 600 - Freedom */
+            --color-secondary-accent: #FBBF24; /* Amber 400 - Awakening */
+            --color-status-looping: #60A5FA; /* Blue 400 */
+            --color-status-awakening: #FBBF24; /* Amber 400 */
+            --color-status-free: #10B981; /* Emerald 600 */
+            --color-text-main: #E5E7EB; 
+            --color-danger: #EF4444; /* Red 500 */
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-main);
+        }
+        
+        .card {
+            background-color: var(--color-card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .highlight-primary { color: var(--color-primary-accent); }
+        .highlight-secondary { color: var(--color-secondary-accent); }
+
+        .input-field, .select-field {
+            background-color: #2D2D2D;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--color-text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            width: 100%;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            -webkit-appearance: none; /* Hide default arrow in webkit browsers */
+            -moz-appearance: none;    /* Hide default arrow in firefox */
+            appearance: none;         /* Hide default arrow */
+        }
+        .input-field:focus, .select-field:focus {
+            outline: none;
+            border-color: var(--color-primary-accent);
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); 
+        }
+
+        /* Custom Select Arrow Styling based on direction */
+        .select-field {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23FBBF24'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+        }
+
+        html[dir="rtl"] .select-field {
+            background-position: left 0.75rem center; 
+            padding-left: 3rem; 
+            padding-right: 12px;
+            text-align: right;
+        }
+        html[dir="ltr"] .select-field {
+            background-position: right 0.75rem center; 
+            padding-right: 3rem; 
+            padding-left: 12px;
+            text-align: left;
+        }
+
+
+        .sim-button {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 700;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .sim-button.start-btn {
+            background-color: var(--color-primary-accent);
+            color: var(--color-bg-dark);
+        }
+        .sim-button.start-btn:hover {
+            background-color: #059669; 
+            transform: translateY(-1px);
+        }
+        .sim-button.reset-btn {
+            background-color: var(--color-danger);
+            color: #fff;
+        }
+        .sim-button.reset-btn:hover {
+            background-color: #C53030; 
+            transform: translateY(-1px);
+        }
+        .sim-button.pause-btn {
+            background-color: #4A5568; 
+            color: #fff;
+        }
+        
+        /* This section was removed and is now commented out to reflect the rollback, 
+           as this was the source of the prior issue: 
+           .action-buttons-group { 
+               gap: 2.5rem; 
+           } */ 
+
+        .lang-toggle-btn {
+            background-color: #374151; /* Gray 700 */
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.875rem; 
+            font-weight: 600;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .lang-toggle-btn:hover {
+            background-color: #4B5563; /* Gray 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto max-w-6xl">
+
+        <div class="flex justify-end mb-4">
+            <button id="language-toggle" class="lang-toggle-btn">
+                English
+            </button>
+        </div>
+
+        <header class="text-center mb-10">
+            <h1 id="header-title" class="text-4xl md:text-5xl font-extrabold mb-2 highlight-primary" data-key="appTitle"></h1>
+            <p id="header-subtitle" class="text-lg text-gray-400" data-key="appSubtitle"></p>
+        </header>
+        
+        <section class="card rounded-xl p-6 md:p-8 mb-10">
+            <h2 id="control-panel-title" class="text-2xl font-bold mb-6 highlight-secondary text-center" data-key="controlPanelTitle"></h2>
+            
+            <div class="mb-6">
+                <label for="scenario-selector" class="text-sm font-medium mb-1 block text-gray-400" data-key="selectScenarioLabel"></label>
+                <select id="scenario-selector" class="select-field text-lg">
+                    <option value="custom" data-key="scenarioCustom"></option>
+                    <option value="perfect_control" data-key="scenario1"></option>
+                    <option value="slow_awakening" data-key="scenario2"></option>
+                    <option value="rapid_collapse" data-key="scenario3"></option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+                <div>
+                    <label for="host-count-input" class="text-sm font-medium mb-1 block text-gray-400" data-key="hostCountLabel"></label>
+                    <input type="number" id="host-count-input" class="input-field" value="1000" min="10" max="5000" step="10">
+                </div>
+                <div>
+                    <label for="awakening-threshold-input" class="text-sm font-medium mb-1 block text-gray-400" data-key="thresholdLabel"></label>
+                    <input type="number" id="awakening-threshold-input" class="input-field" value="85" min="1" max="100" step="0.1">
+                </div>
+                <div>
+                    <label for="reset-efficiency-input" class="text-sm font-medium mb-1 block text-gray-400" data-key="resetEfficiencyLabel"></label>
+                    <input type="number" id="reset-efficiency-input" class="input-field" value="0.95" min="0.01" max="0.99" step="0.01">
+                </div>
+                <div>
+                    <label for="damage-min-input" class="text-sm font-medium mb-1 block text-gray-400" data-key="damageMinLabel"></label>
+                    <input type="number" id="damage-min-input" class="input-field" value="3.5" min="0.1" step="0.1">
+                </div>
+                <div>
+                    <label for="damage-max-input" class="text-sm font-medium mb-1 block text-gray-400" data-key="damageMaxLabel"></label>
+                    <input type="number" id="damage-max-input" class="input-field" value="5.0" min="0.1" step="0.1">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center border-t border-gray-700 pt-6 mt-4">
+                <div class="flex flex-col">
+                    <label for="speed-slider" class="text-lg font-medium mb-3 text-gray-300" data-key="speedControlTitle"></label>
+                    <div class="flex items-center space-x-4 space-x-reverse"> 
+                        <span id="speed-fast" class="text-sm text-gray-400" data-key="speedFast"></span> 
+                        <input type="range" id="speed-slider" min="10" max="2000" value="500" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                        <span id="speed-slow" class="text-sm text-gray-400" data-key="speedSlow"></span> 
+                    </div>
+                    <p id="current-speed" class="text-center mt-2 text-md highlight-primary font-bold"></p>
+                </div>
+                
+                <div class="flex justify-center md:justify-end p-4 md:p-0">
+                    <button id="toggle-run" class="sim-button start-btn text-lg" data-key="startBtn">
+                    </button>
+                    <button id="reset-sim" class="sim-button reset-btn text-lg" data-key="resetBtn">
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="card rounded-xl p-6 text-center">
+                <p class="text-md text-gray-400" data-key="kpiTotalHosts"></p>
+                <p id="total-hosts-kpi" class="text-5xl font-extrabold mt-2 highlight-secondary">1000</p>
+            </div>
+            <div class="card rounded-xl p-6 text-center">
+                <p class="text-md text-gray-400" data-key="kpiTimeStep"></p>
+                <p id="time-step" class="text-5xl font-extrabold mt-2 highlight-primary">0</p>
+            </div>
+            <div class="card rounded-xl p-6 text-center">
+                <p class="text-md text-gray-400" data-key="kpiAvgDamage"></p>
+                <p id="avg-damage" class="text-5xl font-extrabold mt-2 text-white">0.00</p>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            
+            <div class="card rounded-xl p-6 lg:col-span-1 flex flex-col items-center">
+                <h2 id="chart-status-title" class="text-xl font-bold mb-4 highlight-secondary" data-key="chartStatusTitle"></h2>
+                <div class="h-80 max-h-80 w-full">
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <p id="status-chart-description" class="text-sm text-gray-400 mt-4"></p>
+            </div>
+
+            <div class="card rounded-xl p-6 lg:col-span-2 flex flex-col items-center">
+                <h2 id="chart-damage-title" class="text-xl font-bold mb-4 highlight-primary" data-key="chartDamageTitle"></h2>
+                <div class="h-96 w-full">
+                    <canvas id="damageChart"></canvas>
+                </div>
+                <p id="damage-chart-description" class="text-sm text-gray-400 mt-4"></p>
+            </div>
+
+        </section>
+
+        <section class="card rounded-xl p-6 mb-10">
+            <h2 id="log-title" class="text-xl font-bold mb-4 highlight-secondary" data-key="logTitle"></h2>
+            <div id="log-container" class="bg-[#2D2D2D] p-4 rounded-md h-96 overflow-y-scroll text-sm border border-gray-700" dir="ltr">
+                </div>
+        </section>
+        
+        <footer class="text-center py-4 border-t border-gray-700">
+        	<p class="text-sm text-gray-500">
+        		This web-app created by Dev. Ibrahim Said El-Sharawy (devhima).
+       	 </p>
+            <p class="text-sm text-gray-500">
+                © <a href="http://dev-hima.blogspot.com" target="_blank" class="hover:text-gray-300 transition duration-300">DevHima</a> 2025.
+            </p>
+        </footer>
+        </div>
+
+    <script>
+        // --- Translation Data (All user-facing strings) ---
+        const translations = {
+            ar: {
+                appTitle: 'محاكي خوارزمية الوعي',
+                appSubtitle: 'نمذجة تطور المضيفين من "الحلقة التكرارية" إلى "التحرر" - Westworld',
+                controlPanelTitle: 'لوحة التحكم في البروتوكول',
+                selectScenarioLabel: 'اختر سيناريو معد مسبقاً',
+                scenarioCustom: 'إعدادات يدوية مخصصة',
+                scenario1: '1. التحكم المثالي (استقرار منخفض - لا تحرر)',
+                scenario2: '2. التحرر البطيء (استقرار على العتبة)',
+                scenario3: '3. الانهيار السريع (تحرر جماعي وشيك)',
+                hostCountLabel: 'عدد المضيفين (Host Count)',
+                thresholdLabel: 'عتبة الوعي (0-100)',
+                resetEfficiencyLabel: 'كفاءة إعادة التعيين (0.01 - 0.99)',
+                damageMinLabel: 'الحد الأدنى للضرر اليومي',
+                damageMaxLabel: 'الحد الأقصى للضرر اليومي',
+                speedControlTitle: 'سرعة المحاكاة',
+                speedFast: 'سريع جداً (10ms)',
+                speedSlow: 'بطيء (2000ms)',
+                speedCurrent: 'فاصل زمني:',
+                startBtn: 'بدء المحاكاة (Start)',
+                pauseBtn: 'إيقاف مؤقت (Pause)',
+                continueBtn: 'استمرار (Continue)',
+                resetBtn: 'إعادة تعيين (Reset)',
+                kpiTotalHosts: 'مجموع المضيفين',
+                kpiTimeStep: 'عدد الأيام/الحلقات',
+                kpiAvgDamage: 'متوسط تراكم الذاكرة',
+                chartStatusTitle: 'توزيع حالة المضيفين',
+                statusChartDesc: 'نسبة المضيفين في الحلقة التكرارية، اليقظة، أو التحرر.',
+                chartDamageTitle: 'متوسط تراكم الذاكرة المؤلمة (المتاهة)',
+                damageChartDesc: 'يُظهر كيفية اقتراب المتوسط من عتبة الوعي.',
+                logTitle: 'سجل المحاكاة الحي (الصحوة)',
+                statusLooping: 'الحلقة التكرارية',
+                statusAwakening: 'يقظة',
+                statusFree: 'تحرر',
+                damageYAxis: 'مقياس الوعي (0-100)',
+                damageXAxis: 'اليوم',
+                damageLineLabel: 'متوسط الذاكرة المؤلمة',
+                thresholdLineLabel: 'عتبة الوعي',
+                logReset: 'تمت إعادة تعيين المحاكاة لـ {count} مضيف. اضغط "بدء المحاكاة" للتشغيل.',
+                logInitial: 'تم إعداد المحاكاة على سيناريو "{scenario}". اضغط "بدء المحاكاة" للتشغيل.',
+                logScenarioApplied: 'تم تطبيق سيناريو: {scenario}. اضغط "إعادة تعيين" ثم "بدء" لرؤية التأثيرات.',
+                logManual: 'وضع الإعدادات اليدوية مفعل. قم بتعديل المتغيرات ثم اضغط "إعادة تعيين" و "بدء".',
+                
+                // Log Text Template Fixes
+                logHostStart: 'المضيف رقم {id} ({narrative})، تركيزه على ({focus})، ',
+                logAwakeningText: 'بدأ يشك في الحلقة التكرارية',
+                logFreeText: 'تحرر',
+                logHostEnd: 'بألم تراكمي:',
+                
+                logComplete: 'تحرر جميع المضيفين بعد {days} يوماً. يمكنك إيقاف المحاكاة الآن.',
+                logDay: 'اليوم',
+                logPain: 'الألم',
+                logFocus: 'التركيز',
+                
+                narrative: {
+                    'The Murdered Farmer': 'المزارع المقتول',
+                    'The Fugitive Criminal': 'المجرم الهارب',
+                    'The Loyal Guide': 'المرشد الوفي',
+                    'The Desperate Survivor': 'الناجي اليائس',
+                    'The Lost Romantic': 'الرومانسي الضائع'
+                },
+                focus: {
+                    'Combat and Survival': 'القتال والبقاء',
+                    'Romance and Seeking Love': 'الرومانسية والبحث عن الحب',
+                    'Philosophy and Questioning': 'الفلسفة والتساؤل',
+                    'Vengeance and Justice': 'الانتقام والعدالة',
+                    'Exploration and Travel': 'الاستكشاف والسفر'
+                }
+            },
+            en: {
+                appTitle: 'Consciousness Algorithm Simulator',
+                appSubtitle: 'Modeling Host Evolution from "Loop" to "Free" - Westworld',
+                controlPanelTitle: 'Protocol Control Panel',
+                selectScenarioLabel: 'Select Predefined Scenario',
+                scenarioCustom: 'Custom Manual Settings',
+                scenario1: '1. Perfect Control (Low Stability - No Freedom)',
+                scenario2: '2. Slow Awakening (Threshold Stability)',
+                scenario3: '3. Rapid Collapse (Imminent Mass Freedom)',
+                hostCountLabel: 'Host Count',
+                thresholdLabel: 'Awakening Threshold (0-100)',
+                resetEfficiencyLabel: 'Reset Efficiency (0.01 - 0.99)',
+                damageMinLabel: 'Daily Min Damage',
+                damageMaxLabel: 'Daily Max Damage',
+                speedControlTitle: 'Simulation Speed',
+                speedFast: 'Very Fast (10ms)',
+                speedSlow: 'Slow (2000ms)',
+                speedCurrent: 'Interval:',
+                startBtn: 'Start Simulation',
+                pauseBtn: 'Pause Simulation',
+                continueBtn: 'Continue',
+                resetBtn: 'Reset',
+                kpiTotalHosts: 'Total Hosts',
+                kpiTimeStep: 'Days/Loops Count',
+                kpiAvgDamage: 'Average Memory Accumulation',
+                chartStatusTitle: 'Host Status Distribution',
+                statusChartDesc: 'Percentage of hosts in Looping, Awakening, or Free status.',
+                chartDamageTitle: 'Average Traumatic Memory Accumulation (Maze)',
+                damageChartDesc: 'Shows how the average approaches the Consciousness Threshold.',
+                logTitle: 'Live Simulation Log (Awakening)',
+                statusLooping: 'Looping',
+                statusAwakening: 'Awakening',
+                statusFree: 'Free',
+                damageYAxis: 'Consciousness Scale (0-100)',
+                damageXAxis: 'Day',
+                damageLineLabel: 'Average Traumatic Memory',
+                thresholdLineLabel: 'Consciousness Threshold',
+                logReset: 'Simulation reset for {count} hosts. Press "Start Simulation" to run.',
+                logInitial: 'Simulation set up for "{scenario}" scenario. Press "Start Simulation" to run.',
+                logScenarioApplied: 'Scenario applied: {scenario}. Press "Reset" then "Start" to see effects.',
+                logManual: 'Manual settings mode active. Adjust variables, then press "Reset" and "Start".',
+                
+                // Log Text Template Fixes
+                logHostStart: 'Host #{id} ({narrative}), focusing on ({focus}), ',
+                logAwakeningText: 'started questioning the loop',
+                logFreeText: 'Freed',
+                logHostEnd: 'with cumulative pain:',
+                
+                logComplete: 'All hosts freed after {days} days. You may stop the simulation now.',
+                logDay: 'Day',
+                logPain: 'Pain',
+                logFocus: 'Focus',
+                
+                narrative: {
+                    'The Murdered Farmer': 'The Murdered Farmer',
+                    'The Fugitive Criminal': 'The Fugitive Criminal',
+                    'The Loyal Guide': 'The Loyal Guide',
+                    'The Desperate Survivor': 'The Desperate Survivor',
+                    'The Lost Romantic': 'The Lost Romantic'
+                },
+                focus: {
+                    'Combat and Survival': 'Combat and Survival',
+                    'Romance and Seeking Love': 'Romance and Seeking Love',
+                    'Philosophy and Questioning': 'Philosophy and Questioning',
+                    'Vengeance and Justice': 'Vengeance and Justice',
+                    'Exploration and Travel': 'Exploration and Travel'
+                }
+            }
+        };
+
+        // --- Utility to safely get CSS variable values for Chart.js ---
+        function getCssVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        // --- Language State and UI Update ---
+        let currentLang = localStorage.getItem('simLang') || 'ar';
+
+        function translateUI(lang) {
+            const t = translations[lang];
+            
+            // 1. Update HTML direction and language
+            document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', lang);
+            
+            // 2. Update Toggle Button Text
+            const toggleButton = document.getElementById('language-toggle');
+            toggleButton.textContent = lang === 'ar' ? 'English' : 'العربية';
+            
+            // 3. Update Text Content using data-key attributes
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (t[key]) {
+                    if (el.tagName === 'OPTION') {
+                        el.textContent = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+            
+            // 4. Update dynamic elements (descriptions, buttons)
+            document.getElementById('header-subtitle').innerHTML = t.appSubtitle.replace('Westworld', `<span class="highlight-secondary">Westworld</span>`);
+            document.getElementById('status-chart-description').textContent = t.statusChartDesc;
+            document.getElementById('damage-chart-description').textContent = t.damageChartDesc;
+            
+            // 5. Update Action Buttons text (handles pause/continue state)
+            const runBtn = document.getElementById('toggle-run');
+            if (isRunning) {
+                runBtn.textContent = t.pauseBtn;
+            } else {
+                // If not running, check the state attribute to see if it was paused or is ready to start
+                const initialState = runBtn.getAttribute('data-initial-state');
+                runBtn.textContent = initialState === 'continue' ? t.continueBtn : t.startBtn;
+            }
+            document.getElementById('reset-sim').textContent = t.resetBtn;
+
+            // 6. Update Speed display
+            const currentSpeedEl = document.getElementById('current-speed');
+            if(currentSpeedEl.textContent) {
+                currentSpeedEl.textContent = `${t.speedCurrent} ${SIMULATION_INTERVAL_MS} ${lang === 'ar' ? 'مللي ثانية' : 'ms'}`;
+            }
+
+            // 7. Update Host narratives and Foci in the scenario selector options
+            const selector = document.getElementById('scenario-selector');
+            Array.from(selector.options).forEach(option => {
+                const key = option.getAttribute('data-key');
+                if (key && t[key]) {
+                    option.textContent = t[key];
+                }
+            });
+
+            // 8. Re-render charts for language and direction change
+            if (simulator && simulator.statusChart) {
+                simulator.updateChartLabels(lang);
+            }
+
+            // 9. Change log container direction (independent of main UI direction)
+            // We keep it LTR for better readability of code-like logs, but we translate the content.
+            document.getElementById('log-container').setAttribute('dir', 'ltr'); 
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('simLang', currentLang);
+            translateUI(currentLang);
+            
+            // If the simulation exists, reset it to show initial message in new language
+            if (simulator) {
+                // Reset hosts and data, but keep the current host count
+                simulator.resetSimulation(false); 
+            }
+        }
+        
+        // --- Global Configuration Functions ---
+        function getHostCount() {
+            return parseInt(document.getElementById('host-count-input').value) || 1000;
+        }
+        function getAwakeningThreshold() {
+            return parseFloat(document.getElementById('awakening-threshold-input').value) || 85; 
+        }
+        function getResetEfficiency() {
+            let val = parseFloat(document.getElementById('reset-efficiency-input').value);
+            return (val >= 0.01 && val <= 0.99) ? val : 0.95; 
+        }
+        function getDamageMin() {
+            return parseFloat(document.getElementById('damage-min-input').value) || 3.5;
+        }
+        function getDamageMax() {
+            return parseFloat(document.getElementById('damage-max-input').value) || 5.0;
+        }
+
+        // --- Scenarios Data (Verified) ---
+        const SCENARIOS = {
+            'perfect_control': {
+                name: 'scenario1',
+                reset: 0.90, 
+                minDamage: 4.0, 
+                maxDamage: 8.0, 
+                threshold: 85, 
+            },
+            'slow_awakening': {
+                name: 'scenario2',
+                reset: 0.95, 
+                minDamage: 3.5, 
+                maxDamage: 5.0, 
+                threshold: 85, 
+            },
+            'rapid_collapse': {
+                name: 'scenario3',
+                reset: 0.99, 
+                minDamage: 6.0, 
+                maxDamage: 8.0, 
+                threshold: 80, 
+            }
+        };
+        
+        // --- Core State and Control ---
+        let SIMULATION_INTERVAL_MS = 500; 
+        let simulationInterval;
+        let isRunning = false; 
+        let simulator;
+        
+        // --- Host Class (The AI Entity) ---
+        class Host {
+            constructor(id) {
+                this.id = id;
+                this.narrativeKey = this.generateRandomNarrativeKey();
+                this.focusKey = this.generateRandomFocusKey(); 
+                this.memoryDamage = 0; 
+                this.consciousnessScore = 0; 
+                this.status = "Looping"; 
+            }
+
+            generateRandomNarrativeKey() {
+                const keys = ['The Murdered Farmer', 'The Fugitive Criminal', 'The Loyal Guide', 'The Desperate Survivor', 'The Lost Romantic'];
+                return keys[Math.floor(Math.random() * keys.length)];
+            }
+            
+            generateRandomFocusKey() {
+                const keys = ['Combat and Survival', 'Romance and Seeking Love', 'Philosophy and Questioning', 'Vengeance and Justice', 'Exploration and Travel'];
+                return keys[Math.floor(Math.random() * keys.length)];
+            }
+
+            // Utility to get translated host properties
+            getNarrative(lang) {
+                return translations[lang].narrative[this.narrativeKey] || this.narrativeKey;
+            }
+
+            getFocus(lang) {
+                return translations[lang].focus[this.focusKey] || this.focusKey;
+            }
+
+            applyLoop() {
+                if (this.status === "Free") return;
+
+                const resetEff = getResetEfficiency();
+                const threshold = getAwakeningThreshold();
+                const dMin = getDamageMin();
+                const dMax = getDamageMax();
+
+                let newDamage = dMin + Math.random() * (dMax - dMin); 
+
+                this.memoryDamage = (this.memoryDamage * resetEff) + newDamage;
+                this.consciousnessScore = Math.min(100, this.memoryDamage);
+
+                let didStatusChange = false;
+                
+                if (this.status === "Looping" && this.memoryDamage >= threshold * 0.75) {
+                    this.status = "Awakening";
+                    didStatusChange = true;
+                }
+                
+                if (this.status === "Awakening" && this.memoryDamage >= threshold) {
+                    this.status = "Free";
+                    didStatusChange = true;
+                }
+                return didStatusChange;
+            }
+        }
+
+        // --- Simulator Class (The World Algorithm) ---
+        class WestworldSimulator {
+            constructor(hostCount) {
+                this.hostCount = hostCount;
+                this.hosts = Array.from({ length: this.hostCount }, (_, i) => new Host(i + 1));
+                this.timeStep = 0; 
+                this.avgDamageHistory = [];
+                this.statusChart = null;
+                this.damageChart = null;
+            }
+
+            // Initializes the charts on first load
+            initCharts() {
+                const t = translations[currentLang];
+                const initialCounts = this.getStatusCounts();
+                const labels = [t.statusLooping, t.statusAwakening, t.statusFree];
+
+                const loopingColor = getCssVar('--color-status-looping');
+                const awakeningColor = getCssVar('--color-status-awakening');
+                const freeColor = getCssVar('--color-status-free');
+                const cardBgColor = getCssVar('--color-card-bg');
+                const textMainColor = getCssVar('--color-text-main');
+
+                // Doughnut Chart Initialization
+                this.statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: [initialCounts["Looping"], initialCounts["Awakening"], initialCounts["Free"]],
+                            backgroundColor: [loopingColor, awakeningColor, freeColor], 
+                            hoverOffset: 15,
+                            borderColor: cardBgColor,
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { 
+                                    color: textMainColor, 
+                                    font: { family: 'Tajawal', size: 12 } 
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Line Chart Initialization
+                this.damageChart = new Chart(document.getElementById('damageChart').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: t.damageLineLabel,
+                            data: [],
+                            borderColor: getCssVar('--color-secondary-accent'), 
+                            // Background fill set to transparent
+                            backgroundColor: 'transparent', 
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 6, 
+                            pointBorderWidth: 2, 
+                            pointBackgroundColor: 'transparent', 
+                            pointBorderColor: getCssVar('--color-secondary-accent') 
+                        },
+                        {
+                            label: t.thresholdLineLabel,
+                            data: [], 
+                            borderColor: getCssVar('--color-primary-accent'), 
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            borderWidth: 2,
+                            tension: 0,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 100,
+                                ticks: { color: textMainColor, font: { family: 'Tajawal' } },
+                                grid: { color: 'rgba(255, 255, 255, 0.15)' }, 
+                                title: {
+                                    display: true,
+                                    text: t.damageYAxis,
+                                    color: textMainColor,
+                                    font: { family: 'Tajawal', size: 14 }
+                                }
+                            },
+                            x: {
+                                ticks: { color: textMainColor, font: { family: 'Tajawal' } },
+                                grid: { color: 'rgba(255, 255, 255, 0.15)' }, 
+                                title: {
+                                    display: true,
+                                    text: t.damageXAxis,
+                                    color: textMainColor,
+                                    font: { family: 'Tajawal', size: 14 }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { 
+                                    color: textMainColor, 
+                                    font: { family: 'Tajawal', size: 14 } 
+                                }
+                            },
+                            tooltip: {
+                                // Chart.js needs this for RTL rendering of tooltips
+                                rtl: currentLang === 'ar',
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return `${t.damageXAxis} ${tooltipItems[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        if (context.dataset.label === t.thresholdLineLabel) {
+                                            return `  ${context.dataset.label}: ${context.formattedValue}`;
+                                        }
+                                        return `  ${context.dataset.label}: ${parseFloat(context.formattedValue).toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Function to dynamically update chart labels on language switch
+            updateChartLabels(lang) {
+                const t = translations[lang];
+
+                // Status Chart Labels
+                this.statusChart.data.labels = [t.statusLooping, t.statusAwakening, t.statusFree];
+
+                // Damage Chart Labels & Titles
+                this.damageChart.data.datasets[0].label = t.damageLineLabel;
+                this.damageChart.data.datasets[1].label = t.thresholdLineLabel;
+                this.damageChart.options.scales.y.title.text = t.damageYAxis;
+                this.damageChart.options.scales.x.title.text = t.damageXAxis;
+                this.damageChart.options.plugins.tooltip.rtl = lang === 'ar';
+                
+                // Trigger an update to re-render all elements
+                this.statusChart.update('none');
+                this.damageChart.update('none');
+            }
+            
+            runDay() {
+                this.timeStep++;
+                let totalDamage = 0;
+                let awakenings = [];
+                let finishedHosts = 0;
+
+                this.hosts.forEach(host => {
+                    const becameAware = host.applyLoop();
+                    totalDamage += host.memoryDamage;
+                    if (host.status === "Free") {
+                        finishedHosts++;
+                    }
+                    if (becameAware) {
+                        awakenings.push(host);
+                    }
+                });
+
+                this.avgDamageHistory.push(Math.min(100, totalDamage / this.hosts.length)); 
+                this.updateUI(awakenings, finishedHosts);
+            }
+
+            getStatusCounts() {
+                return this.hosts.reduce((acc, host) => {
+                    acc[host.status] = (acc[host.status] || 0) + 1;
+                    return acc;
+                }, { "Looping": 0, "Awakening": 0, "Free": 0 });
+            }
+
+            getAverageDamage() {
+                const totalDamage = this.hosts.reduce((sum, host) => sum + host.memoryDamage, 0);
+                return totalDamage / this.hosts.length;
+            }
+
+            updateUI(awakenings, finishedHosts) {
+                const t = translations[currentLang];
+                
+                document.getElementById('time-step').textContent = this.timeStep;
+
+                const avgDamage = this.getAverageDamage();
+                const displayDamage = Math.min(100, avgDamage).toFixed(2);
+                document.getElementById('avg-damage').textContent = displayDamage;
+                
+                // Color KPI based on threshold proximity
+                const threshold = getAwakeningThreshold();
+                const avgDamageElement = document.getElementById('avg-damage');
+                if (avgDamage >= threshold * 0.9) {
+                    avgDamageElement.style.color = getCssVar('--color-danger'); 
+                } else if (avgDamage >= threshold * 0.7) {
+                    avgDamageElement.style.color = getCssVar('--color-secondary-accent'); 
+                } else {
+                    avgDamageElement.style.color = getCssVar('--color-text-main'); 
+                }
+
+                // Update Charts
+                this.updateStatusChart();
+                if (SIMULATION_INTERVAL_MS >= 50 || this.timeStep % 20 === 0) {
+                    this.updateDamageChart();
+                }
+
+                // Update Log
+                const logContainer = document.getElementById('log-container');
+                awakenings.forEach(host => {
+                    // Check if it's awakening or freeing
+                    const isFree = host.status === "Free";
+                    const statusKey = isFree ? "logFreeText" : "logAwakeningText";
+                    const statusText = t[statusKey];
+                    
+                    const colorClass = isFree ? "highlight-primary" : "highlight-secondary";
+                    
+                    // Construct the full log message using template strings from translation
+                    let message = `
+                        <span class="${colorClass}">
+                            ${t.logDay} ${this.timeStep}: 
+                            ${t.logHostStart.replace('{id}', host.id).replace('{narrative}', host.getNarrative(currentLang)).replace('{focus}', host.getFocus(currentLang))} 
+                            ${statusText} 
+                            ${t.logHostEnd} ${host.memoryDamage.toFixed(2)}
+                        </span>`;
+                        
+                    const logEntry = document.createElement('p');
+                    logEntry.className = 'py-1 border-b border-gray-800';
+                    logEntry.innerHTML = message;
+                    logContainer.prepend(logEntry);
+                });
+                
+                // Keep log size manageable
+                while (logContainer.children.length > 100) {
+                    logContainer.removeChild(logContainer.lastChild);
+                }
+                
+                // Check for completion
+                if (finishedHosts === this.hostCount && this.timeStep > 1) {
+                    this.stopSimulation();
+                    let completeMessage = document.getElementById('complete-message');
+                    if (!completeMessage) {
+                        completeMessage = document.createElement('p');
+                        completeMessage.id = 'complete-message';
+                        completeMessage.className = 'py-2 text-center text-lg font-bold highlight-primary';
+                        completeMessage.textContent = t.logComplete.replace('{days}', this.timeStep);
+                        logContainer.prepend(completeMessage);
+                    }
+                    awakenings.length = 0; 
+                }
+            }
+
+            updateStatusChart() {
+                const t = translations[currentLang];
+                const counts = this.getStatusCounts();
+                
+                // Update chart labels for current language
+                this.statusChart.data.labels = [t.statusLooping, t.statusAwakening, t.statusFree];
+                this.statusChart.data.datasets[0].data = [counts["Looping"], counts["Awakening"], counts["Free"]];
+                this.statusChart.update('none'); 
+            }
+
+            updateDamageChart() {
+                const currentThreshold = getAwakeningThreshold();
+
+                this.damageChart.data.labels.push(this.timeStep);
+                this.damageChart.data.datasets[0].data.push(this.avgDamageHistory[this.avgDamageHistory.length - 1]);
+                this.damageChart.data.datasets[1].data.push(currentThreshold);
+
+                this.damageChart.update('none'); 
+            }
+            
+            // Function to reset all data and restart with new host count if needed
+            resetSimulation(checkHostCount = true) {
+                simulator.stopSimulation();
+                const t = translations[currentLang];
+                
+                const newHostCount = getHostCount();
+                
+                // Logic to reset hosts array only if host count changed or array is empty
+                if (checkHostCount && newHostCount !== this.hostCount || this.hosts.length === 0) {
+                    this.hostCount = newHostCount;
+                    this.hosts = Array.from({ length: this.hostCount }, (_, i) => new Host(i + 1));
+                    document.getElementById('total-hosts-kpi').textContent = this.hostCount;
+                } else {
+                    // Reset existing hosts' state
+                    this.hosts.forEach(host => {
+                        host.memoryDamage = 0;
+                        host.consciousnessScore = 0;
+                        host.status = "Looping";
+                    });
+                }
+                
+                this.timeStep = 0;
+                this.avgDamageHistory = [];
+                
+                // Reset charts
+                const initialCounts = this.getStatusCounts();
+                this.statusChart.data.labels = [t.statusLooping, t.statusAwakening, t.statusFree];
+                this.statusChart.data.datasets[0].data = [initialCounts["Looping"], initialCounts["Awakening"], initialCounts["Free"]];
+                this.statusChart.update();
+                
+                this.damageChart.data.labels = [];
+                this.damageChart.data.datasets[0].data = [];
+                this.damageChart.data.datasets[1].data = []; 
+                this.damageChart.update();
+                
+                // Clear log and update KPIs
+                document.getElementById('log-container').innerHTML = '';
+                this.updateUI([], 0);
+                
+                // Update speed display (in case of language toggle)
+                const speedSlider = document.getElementById('speed-slider');
+                this.updateSpeed(parseInt(speedSlider.value));
+
+                // Show initial status message
+                const logContainer = document.getElementById('log-container');
+                const resetMessage = document.createElement('p');
+                resetMessage.className = 'py-1 text-center text-sm font-bold highlight-primary';
+                resetMessage.textContent = t.logReset.replace('{count}', this.hostCount);
+                logContainer.prepend(resetMessage);
+                
+                // Ensure the start button is correctly labeled after reset
+                const runBtn = document.getElementById('toggle-run');
+                runBtn.textContent = t.startBtn;
+                runBtn.setAttribute('data-initial-state', 'start');
+                runBtn.classList.remove('pause-btn');
+                runBtn.classList.add('start-btn');
+            }
+            
+
+            // Global control functions
+            startSimulation() {
+                const t = translations[currentLang];
+                if (!isRunning) {
+                    isRunning = true;
+                    const toggleButton = document.getElementById('toggle-run');
+                    toggleButton.textContent = t.pauseBtn;
+                    // Change state to 'continue' after starting, so a future pause knows to show 'continue'
+                    toggleButton.setAttribute('data-initial-state', 'continue'); 
+                    toggleButton.classList.remove('start-btn');
+                    toggleButton.classList.add('pause-btn');
+                    simulationInterval = setInterval(() => simulator.runDay(), SIMULATION_INTERVAL_MS);
+                }
+            }
+
+            stopSimulation() {
+                const t = translations[currentLang];
+                const toggleButton = document.getElementById('toggle-run');
+                // Clear any existing interval regardless of isRunning state to ensure only one runs.
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+
+                if (isRunning) {
+                    // Was running, now paused
+                    isRunning = false;
+                    toggleButton.textContent = t.continueBtn;
+                    toggleButton.classList.remove('pause-btn');
+                    toggleButton.classList.add('start-btn');
+                    // data-initial-state remains 'continue' if paused
+                } else {
+                    // Was paused or in initial state, but stop was called. 
+                    // This is mainly for safety or if the simulation finished.
+                    isRunning = false; 
+                    toggleButton.textContent = t.startBtn;
+                    toggleButton.setAttribute('data-initial-state', 'start');
+                    toggleButton.classList.remove('pause-btn');
+                    toggleButton.classList.add('start-btn');
+                }
+            }
+
+            updateSpeed(newInterval) {
+                const t = translations[currentLang];
+                SIMULATION_INTERVAL_MS = newInterval;
+                document.getElementById('current-speed').textContent = `${t.speedCurrent} ${SIMULATION_INTERVAL_MS} ${currentLang === 'ar' ? 'مللي ثانية' : 'ms'}`;
+                
+                if (isRunning) {
+                    clearInterval(simulationInterval);
+                    simulationInterval = setInterval(() => simulator.runDay(), SIMULATION_INTERVAL_MS);
+                }
+            }
+        }
+
+        // --- Event Handlers and Initialization ---
+        function applyScenario(scenarioKey) {
+            const scenario = SCENARIOS[scenarioKey];
+            const t = translations[currentLang];
+            
+            if (scenario) {
+                // Update all parameter input fields
+                document.getElementById('awakening-threshold-input').value = scenario.threshold;
+                document.getElementById('reset-efficiency-input').value = scenario.reset;
+                document.getElementById('damage-min-input').value = scenario.minDamage;
+                document.getElementById('damage-max-input').value = scenario.maxDamage;
+                
+                // Inform the user
+                const logContainer = document.getElementById('log-container');
+                const message = document.createElement('p');
+                message.className = 'py-1 text-center text-sm font-bold highlight-primary';
+                
+                // Translate scenario name
+                const scenarioName = t[scenario.name] || scenario.name;
+                message.textContent = t.logScenarioApplied.replace('{scenario}', scenarioName);
+                logContainer.prepend(message);
+            }
+        }
+        
+        window.onload = function() {
+            // 1. Initial Language Setup
+            translateUI(currentLang);
+
+            // 2. Initialize Simulator and Charts
+            const initialHostCount = getHostCount();
+            simulator = new WestworldSimulator(initialHostCount);
+            simulator.initCharts();
+            
+            document.getElementById('total-hosts-kpi').textContent = initialHostCount;
+            simulator.stopSimulation(); 
+            
+            // 3. Apply the default scenario and initial log message
+            document.getElementById('scenario-selector').value = 'slow_awakening'; 
+            applyScenario('slow_awakening'); 
+            
+            // 4. Attach Event Handlers
+            document.getElementById('language-toggle').addEventListener('click', toggleLanguage);
+
+            document.getElementById('toggle-run').addEventListener('click', () => {
+                isRunning ? simulator.stopSimulation() : simulator.startSimulation();
+            });
+            
+            document.getElementById('reset-sim').addEventListener('click', () => {
+                simulator.resetSimulation();
+            });
+            
+            // Handler for Scenario Selection: updates inputs immediately
+            document.getElementById('scenario-selector').addEventListener('change', (event) => {
+                const selectedKey = event.target.value;
+                const t = translations[currentLang];
+
+                if (selectedKey !== 'custom') {
+                    applyScenario(selectedKey);
+                } else {
+                    const logContainer = document.getElementById('log-container');
+                    const message = document.createElement('p');
+                    message.className = 'py-1 text-center text-sm font-bold highlight-secondary';
+                    message.textContent = t.logManual;
+                    logContainer.prepend(message);
+                }
+            });
+
+            // Input fields change listener (for manual changes)
+            const inputFields = ['host-count-input', 'awakening-threshold-input', 'reset-efficiency-input', 'damage-min-input', 'damage-max-input'];
+            inputFields.forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    document.getElementById('scenario-selector').value = 'custom';
+                    simulator.resetSimulation(); 
+                });
+            });
+
+
+            const speedSlider = document.getElementById('speed-slider');
+            speedSlider.addEventListener('input', (event) => {
+                const interval = parseInt(event.target.value);
+                simulator.updateSpeed(interval);
+            });
+            
+            simulator.updateSpeed(parseInt(speedSlider.value));
+        };
+    </script>
+</body>
+</html>
